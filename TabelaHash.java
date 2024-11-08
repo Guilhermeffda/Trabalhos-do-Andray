@@ -1,14 +1,14 @@
-package Trabalho_tabela_Hash;
-
-public class TabelaHash {
+class TabelaHash {
     private No[] tabela;
     private int tamanho;
     private int funcaoHash;
+    private long colisoes;
 
     public TabelaHash(int tamanho, int funcaoHash) {
         this.tamanho = tamanho;
         this.funcaoHash = funcaoHash;
         this.tabela = new No[tamanho];
+        this.colisoes = 0;
     }
 
     private int hash1(int chave) {
@@ -29,32 +29,6 @@ public class TabelaHash {
         return hash % tamanho;
     }
 
-    public void inserir(Registro registro) {
-        int indice = calcularHash(registro.codigo);
-        No novoNo = new No(registro);
-        if (tabela[indice] == null) {
-            tabela[indice] = novoNo;
-        } else {
-            No atual = tabela[indice];
-            while (atual.proximo != null) {
-                atual = atual.proximo;
-            }
-            atual.proximo = novoNo;
-        }
-    }
-
-    public boolean buscar(int codigo) {
-        int indice = calcularHash(codigo);
-        No atual = tabela[indice];
-        while (atual != null) {
-            if (atual.registro.codigo == codigo) {
-                return true;
-            }
-            atual = atual.proximo;
-        }
-        return false;
-    }
-
     private int calcularHash(int chave) {
         switch (funcaoHash) {
             case 1: return hash1(chave);
@@ -64,17 +38,37 @@ public class TabelaHash {
         }
     }
 
-    public int getColisoes() {
-        int colisoes = 0;
-        for (No no : tabela) {
-            if (no != null && no.proximo != null) {
-                No atual = no;
-                while (atual.proximo != null) {
-                    colisoes++;
-                    atual = atual.proximo;
-                }
+    public void inserir(Registro registro) {
+        int indice = calcularHash(registro.codigo);
+        No novoNo = new No(registro);
+        if (tabela[indice] == null) {
+            tabela[indice] = novoNo;
+        } else {
+            No atual = tabela[indice];
+            while (atual.proximo != null) {
+                colisoes++;
+                atual = atual.proximo;
             }
+            atual.proximo = novoNo;
+            colisoes++;
         }
+    }
+
+    public int buscar(int codigo) {
+        int indice = calcularHash(codigo);
+        No atual = tabela[indice];
+        int comparacoes = 0;
+        while (atual != null) {
+            comparacoes++;
+            if (atual.registro.codigo == codigo) {
+                return comparacoes;
+            }
+            atual = atual.proximo;
+        }
+        return comparacoes;
+    }
+
+    public long getColisoes() {
         return colisoes;
     }
 }
